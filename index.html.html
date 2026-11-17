@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>엘든 링 3인 협력 공략 — 빌드 &amp; 파밍 루트</title>
+<style>
+:root {
+  color-scheme: light;
+  --paper:#f4f2ed; --surface:#fff; --ink:#202722; --muted:#4e5a50;
+  --line:#d6dbd2; --green:#255238; --gold:#7a500e;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+}
+*,*::before,*::after { box-sizing:border-box }
+html { scroll-padding-top:5rem }
+body { margin:0; background:var(--paper); color:var(--ink); font:17px/1.65 var(--sans); word-break:keep-all; overflow-wrap:anywhere }
+.wrap { width:min(1120px,calc(100% - 48px)); margin-inline:auto }
+h1,h2,h3,h4,p { margin:0 }
+h1,h2,h3,h4 { line-height:1.28; letter-spacing:-.035em }
+h1 { font-size:clamp(2rem,5vw,3.8rem) }
+h2 { font-size:clamp(1.65rem,3vw,2.45rem) }
+h3 { font-size:1.16rem }
+b,strong { font-weight:750 }
+a { color:var(--green); text-underline-offset:.22em }
+button { font:inherit; color:inherit; cursor:pointer }
+:focus-visible { outline:3px solid #286249; outline-offset:3px }
+[hidden] { display:none!important }
+.hero { background:#17271e; color:#fff; padding:2.1rem 0 1.95rem }
+.hero p { color:#e2e9de; margin-top:.55rem }
+.hero .small { color:#bfcfc0 }
+nav { position:sticky; top:0; z-index:3; background:var(--surface); border-bottom:1px solid var(--line) }
+nav .wrap { display:flex; min-height:3.3rem; align-items:center; gap:.55rem; overflow-x:auto; scrollbar-width:thin }
+nav a { flex:none; padding:.55rem .62rem; border-radius:6px; color:var(--ink); font-size:.93rem; font-weight:750; text-decoration:none }
+nav a:first-child,nav a:hover { background:#e5efe6; color:#215235 }
+main { padding:1.8rem 0 3rem }
+main > section+section { margin-top:3.4rem }
+.sub,.muted { color:var(--muted) }
+.sub { margin-top:.44rem; max-width:72ch }
+.small,.progress { font-size:.86rem; color:var(--muted) }
+.priority { margin:1.1rem 0 .75rem; padding:.78rem 1rem; background:#fff6dc; border:1px solid #e7d8a8; border-radius:10px }
+.priority h3 { color:#664508; font-size:.96rem }
+.priority ul { margin:.22rem 0 0; padding:0; list-style:none; display:flex; gap:.2rem 1.15rem; flex-wrap:wrap }
+.priority li { margin:0; font-size:.95rem }
+.priority a { color:#61440e; font-weight:750 }
+.coop-help { margin-block:0 .9rem; border:1px solid var(--line); border-radius:10px; background:var(--surface) }
+.coop-help summary { cursor:pointer; padding:.75rem 1rem; font-weight:750 }
+.coop-help ul { margin:0; padding:0 1rem .85rem 2.25rem }
+.coop-help li+li { margin-top:.45rem }
+.toolbar { display:flex; justify-content:space-between; flex-wrap:wrap; gap:.45rem .75rem; align-items:center; margin:.9rem 0 .6rem }
+.chips,.route-tools { display:flex; gap:.38rem; align-items:center; flex-wrap:wrap }
+.chips button,.plain { border:1px solid #bfc8bc; background:var(--surface); border-radius:7px; padding:.34rem .7rem; min-height:42px; font-size:.9rem; font-weight:700 }
+.chips button[aria-pressed="true"] { background:var(--green); color:#fff; border-color:var(--green) }
+.plain:hover,.chips button:hover:not([aria-pressed="true"]) { background:#e9f0e8 }
+.progress { font-variant-numeric:tabular-nums; font-weight:750 }
+.flow { display:grid; gap:.65rem }
+.route { background:var(--surface); border:1px solid var(--line); border-radius:12px; }
+.route[open] { border-color:#aab8ab }
+.route summary { list-style:none; cursor:pointer; padding:.8rem .95rem; }
+.route summary::-webkit-details-marker { display:none }
+.route-head { display:grid; grid-template-columns:2.4rem minmax(0,1fr) 1rem; gap:.05rem .65rem; align-items:center }
+.order { grid-row:1/3; align-self:start; display:grid; place-items:center; min-height:2.2rem; border-radius:7px; background:#e9efe7; color:#31563c; font-weight:800; font-variant-numeric:tabular-nums }
+.route.complete .order { background:#245638; color:#fff }
+.route-title { font-size:1.05rem; font-weight:800; line-height:1.42 }
+.route-level { margin-left:.45rem; color:#505d52; font-size:.83rem; font-weight:650; white-space:nowrap }
+.route-preview { grid-column:2; color:var(--muted); font-size:.9rem; line-height:1.45 }
+.chevron { grid-column:3; grid-row:1/3; justify-self:center; width:.56rem; height:.56rem; border-right:2px solid #385443; border-bottom:2px solid #385443; transform:rotate(45deg); margin-top:-.22rem }
+.route[open] .chevron { transform:rotate(225deg); margin-top:.22rem }
+.route-body { border-top:1px solid var(--line); padding:.85rem .95rem .9rem }
+.route-content { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem }
+.route-group { background:#f7f8f4; border:1px solid #e1e6dd; border-radius:9px; padding:.66rem .8rem }
+.route-group.common { grid-column:1/-1; background:#ecf3ea; border-color:#dbe5d9 }
+.route-group h4 { display:flex; flex-wrap:wrap; gap:.28rem; font:750 .89rem/1.4 var(--sans); margin-bottom:.33rem }
+.route-group ul,.combat ul,.support ul { padding-left:1.12rem; margin:0 }
+.route-group li+li,.combat li+li,.support li+li { margin-top:.34rem }
+.route-group li::marker { color:var(--green) }
+.route-group li { font-size:1rem }
+.tag { display:inline-block; padding:.14rem .46rem; border-radius:4px; background:#dbe9db; color:#245436 }
+.magic { --accent:#234e8a; --wash:#e7effc }
+.blood { --accent:#983545; --wash:#fcebf0 }
+.faith { --accent:#76510e; --wash:#fff2d3 }
+.tag.role { background:var(--wash); color:var(--accent) }
+.tick { display:flex; gap:.52rem; align-items:flex-start; margin-top:.65rem; padding:.4rem .05rem 0; font-size:.94rem; font-weight:700; cursor:pointer }
+.tick input { flex:none; width:1.15rem; height:1.15rem; accent-color:#245638; margin:.2rem 0 0 }
+.tick.done { color:#345f45 }
+#storage-status { margin-top:.5rem }
+.build { scroll-margin-top:.45rem }
+.build-header { padding:.9rem 1rem; background:var(--wash); border-top:3px solid var(--accent); border-radius:10px }
+.build-header h2 { color:var(--accent) }
+.build-header .sub { color:#303a39; margin-top:.3rem }
+.build-layout { display:grid; grid-template-columns:minmax(290px,.83fr) minmax(0,1.4fr); gap:.75rem; align-items:start; margin-top:.75rem }
+.box { background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:.85rem 1rem }
+.stats,.gear-panel,.gear-talisman,.combat { min-width:0 }
+.box h3 { margin-bottom:.54rem }
+.stats table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; text-align:center; font-size:.97rem }
+.stats th,.stats td { padding:.33rem .31rem; border-bottom:1px solid #e1e6df }
+.stats thead th { color:var(--accent); background:var(--wash); font-size:.89rem; white-space:nowrap }
+.stats th:first-child { text-align:left }
+.stats tbody tr:nth-child(even) { background:#f7f8f6 }
+.stats tbody tr:last-child>* { border-bottom:0 }
+.stats .stat-note { border-top:1px solid var(--line); margin-top:.45rem; padding-top:.55rem; font-size:.94rem }
+.gear { list-style:none; padding:0; margin:0; }
+.gear > li { padding:.48rem 0; border-top:1px solid #e1e6df }
+.gear > li:first-child { border-top:0; padding-top:0 }
+.gear > li:last-child { padding-bottom:0 }
+.gear-label { display:block; color:var(--accent); font-size:.96rem; margin-bottom:.15rem }
+.gear-talisman .gear { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem }
+.gear-talisman .gear > li { padding:.6rem .68rem; border:1px solid #e1e6df; border-radius:7px; background:#f8f9f6; }
+.gear-talisman,.combat { grid-column:1/-1 }
+.combat { border-left:4px solid var(--accent) }
+.boss-cards,.support { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.65rem; margin-top:.75rem }
+.boss-cards article { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:.72rem .9rem }
+.boss-cards h3 { margin-bottom:.35rem }
+.boss-cards dl { display:grid; grid-template-columns:auto 1fr; gap:.25rem .55rem; margin:0; }
+.boss-cards dt { color:var(--accent); font-size:.94rem; font-weight:800 }
+.boss-cards dd { margin:0 }
+.support { grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) }
+.source ul { margin:.55rem 0 0; padding-left:1.25rem; columns:2; column-gap:2.2rem }
+.source li { break-inside:avoid; margin:.28rem 0; }
+@media(max-width:760px) {
+  .wrap { width:calc(100% - 28px) }
+  .hero { padding:1.5rem 0 1.35rem }
+  nav .wrap { gap:.15rem; }
+  nav a { padding:.5rem .46rem }
+  main { padding-top:1.25rem }
+  main > section+section { margin-top:2.65rem }
+  .build-layout,.support { grid-template-columns:minmax(0,1fr) }
+  .build-layout { gap:.55rem }
+  .route-level { margin-left:.3rem }
+}
+@media(max-width:570px) {
+  body { font-size:16px }
+  .route-content,.boss-cards,.gear-talisman .gear { grid-template-columns:minmax(0,1fr) }
+  .route summary { padding:.68rem .72rem }
+  .route-body { padding:.65rem .7rem }
+  .route-head { grid-template-columns:2.05rem minmax(0,1fr) .75rem; column-gap:.45rem }
+  .route-level { display:block; margin-left:0; margin-top:.04rem; }
+  .route-preview { margin-top:.15rem }
+  .source ul { columns:1 }
+  .box { padding:.78rem .85rem }
+}
+@media print {
+  body,.hero { background:#fff; color:#111 }
+  .hero p,.hero .small { color:#222 }
+  nav,.toolbar,.tick,#storage-status { display:none }
+  .wrap { width:100% }
+  main > section+section { margin-top:1.45rem }
+  .route,.box,.boss-cards article { break-inside:avoid }
+}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+
+<h1>엘든 링 3인 협력 공략</h1>
+<p>명도 월은 마검사 · 쌍날검 출혈 · 신앙 기도와 힐검사</p>
+<p class="small">1회차 새 캐릭터 · 기본 게임 완주 + 황금 나무의 그림자 선택 · 공식 패치 1.17.2 기준</p>
+</div></header>
+<nav aria-label="목차"><div class="wrap"><a href="#route">공동 동선</a><a href="#magic">마검사</a><a href="#blood">출혈</a><a href="#faith">신앙·힐검사</a><a href="#boss">보스 대응</a><a href="#sources">출처</a></div></nav>
+<main class="wrap">
+
+
+<section id="route">
+<h2>세 명이 도는 순서</h2>
+<p class="sub">보스전은 셋이 합류하고, 필드 파밍과 NPC 대화는 각자 진행해.</p>
+<aside class="priority"><h3>놓치기 쉬운 순서</h3><ul><li><a href="#stage-04">마력 전갈 먼저 → 라니에게 칼날 전달</a></li><li><a href="#stage-06">흰 가면 먼저 → 피의 군주 모그</a></li><li><a href="#stage-05">두 손가락의 기도서 먼저 → 흑검 말리케스</a></li></ul></aside><details class="coop-help"><summary>3인 소환과 호스트 교대 방법</summary><ul><li>같은 <b>멀티플레이 비밀번호</b>를 설정해.</li><li>호스트는 <b>갈고리를 부르는 손가락 약</b>, 게스트 둘은 <b>빛바랜 자의 갈고리 손가락</b>을 써서 같은 축복 근처에 사인을 남겨.</li><li>보스를 한 번 잡을 때 호스트 세계만 진행되므로 <b>A 호스트 → B 호스트 → C 호스트</b> 순서로 반복하면 셋 다 다음 지역을 열 수 있어.</li><li>토렌트 이동, NPC 퀘스트, 축복 정비는 해산하고 각자 해.</li><li>구역 경계에서 재소환할 수 있고, 해당 구역 보스를 이미 잡은 세계는 협력 소환이 막힐 수 있어.</li><li>게스트는 성배병 횟수가 줄어드니 강화 재료도 셋 다 챙겨.</li><li>성배병은 황금 종자로 횟수, 성배의 물방울로 회복량을 늘려.</li></ul></details>
+<div class="toolbar"><div class="chips" role="group" aria-label="공동 동선 역할 필터">
+<button type="button" data-filter="all" aria-pressed="true">전체</button><button type="button" data-filter="magic" aria-pressed="false">마검사</button><button type="button" data-filter="blood" aria-pressed="false">출혈</button><button type="button" data-filter="faith" aria-pressed="false">신앙</button>
+</div><div class="route-tools"><output class="progress" id="progress" aria-live="polite">0 / 8 완료</output><button type="button" class="plain" data-routes="open">모두 펼치기</button><button type="button" class="plain" data-routes="close">모두 접기</button></div></div>
+<div class="flow">
+<details class="route" id="stage-01"><summary><span class="route-head"><span aria-hidden="true" class="order">01</span><span class="route-title">림그레이브 · 흐느낌의 반도<span class="route-level">Lv. 1–25</span></span><span class="route-preview">토렌트 · 영약 · 초반 주력 장비</span><span aria-hidden="true" class="chevron"></span></span></summary><div class="route-body">
+
+
+
+
+<div class="route-content"><div class="route-group common"><h4><span class="tag">각자</span></h4><ul><li>관문 앞 폐허에서 지도와 <b>숫돌 소도</b>, 엘레의 교회에서 제작 도구를 챙겨.</li><li>축복에서 멜리나를 만나 토렌트를 열고, 제3 마리카 교회에서 <b>영약의 성배병</b>과 <b>성배의 물방울</b>을 획득.</li><li>흐느낌의 반도 교회들을 돌아 성배병을 추가 강화.</li></ul></div><div class="route-group" data-role="magic"><h4><span class="tag role magic">마검사</span></h4><ul><li>아길 호수 남쪽 축복 남동쪽 야영지의 <b>왕가의 스크롤</b> → 역참터 지하실의 셀렌에게 주고 <b>카리아의 속검</b> 구입.</li><li>죄수 기본 <b>마술의 휘검</b>과 함께 사용.</li></ul></div><div class="route-group" data-role="blood"><h4><span class="tag role blood">출혈</span></h4><ul><li>사무라이 기본 <b>타도</b> + 죽음을 맞이한 지하 묘지의 두 번째 <b>타도</b>.</li><li>하이트 요새 꼭대기 기사를 잡아 <b>피의 참격</b>, 상자에서 <b>덱타스의 부절(좌)</b>.</li><li>아길 호수 남쪽의 용이 불태운 폐허에서 낮은 담을 토렌트로 넘어 지하 상자의 <b>트윈 블레이드</b>도 주워두기.</li></ul></div><div class="route-group" data-role="faith"><h4><span class="tag role faith">신앙</span></h4><ul><li>예언자 기본 <b>손가락의 성인</b> + <b>불 붙이기</b> + <b>회복</b>.</li><li>큰 적은 짧게 불 붙이기를 쓰고, FP가 아까운 잡몹은 기본 <b>숏 스피어</b>로 처리.</li></ul></div></div><label class="tick"><input type="checkbox" id="r1">셋 다 토렌트·영약 해금, 초반 주력 장비 확보</label>
+</div></details>
+<details class="route" id="stage-02"><summary><span class="route-head"><span aria-hidden="true" class="order">02</span><span class="route-title">케일리드 서쪽 우회 · 스톰빌 성<span class="route-level">Lv. 20–40</span></span><span class="route-preview">멀기트 → 고드릭 · 명도 월은 · 흑염</span><span aria-hidden="true" class="chevron"></span></span></summary><div class="route-body">
+
+
+
+
+<div class="route-content"><div class="route-group common"><h4><span class="tag">합류</span></h4><ul><li>케일리드 필드 파밍은 각자 → <b>게르 갱도</b> 정문 쪽에서 가능한 인원끼리 합류 → 림그레이브로 돌아와 <b>끔찍한 흉조 멀기트 → 접목의 고드릭</b>을 호스트 교대로 처치.</li><li>게르 갱도가 버거우면 점 찍고 고드릭 이후 돌아와.</li></ul></div><div class="route-group" data-role="magic"><h4><span class="tag role magic">마검사</span></h4><ul><li>에오니아 늪 서쪽 <b>현자 도시의 폐허</b>에서 <b>운석 지팡이</b>와 북쪽 지하 상자의 <b>암석탄</b>.</li><li>게르 갱도의 <b>용암토룡</b> 처치로 <b>명도 월은</b>.</li><li>운석 지팡이는 강화가 필요 없고, 월은은 색 잃은 단석에 우선 투자.</li></ul></div><div class="route-group" data-role="blood"><h4><span class="tag role blood">출혈</span></h4><ul><li>스톰빌 성 <b>성벽 탑</b> 축복에서 지붕과 무너진 기둥을 넘어 망루 꼭대기 시체의 <b>손톱의 탈리스만</b>.</li><li>쌍타도 점프 동시 공격부터 활용.</li></ul></div><div class="route-group" data-role="faith"><h4><span class="tag role faith">신앙</span></h4><ul><li>게르 요새 뒤, 화염차 두 대 사이 시체의 <b>불이여, 힘을!</b>.</li><li>스톰빌 성 광장 지하 봉인방에 <b>석검 열쇠</b> 1개를 써서 <b>신 사냥의 성인</b>과 <b>신의 살갗의 기도서</b>를 챙겨.</li><li>기도서를 미리엘 또는 콜린에게 주고 <b>흑염</b> 습득.</li></ul></div></div><label class="tick"><input type="checkbox" id="r2">고드릭 3회 · 월은 · 흑염 준비</label>
+</div></details>
+<details class="route" id="stage-03"><summary><span class="route-head"><span aria-hidden="true" class="order">03</span><span class="route-title">호수의 리에니에 · 마술학원<span class="route-level">Lv. 35–60</span></span><span class="route-preview">붉은 늑대 → 레날라 · 카리아의 대검 · 벼락 창</span><span aria-hidden="true" class="chevron"></span></span></summary><div class="route-body">
+
+
+
+
+
+
+
+<div class="route-content"><div class="route-group common"><h4><span class="tag">합류</span></h4><ul><li>학원 서쪽 <b>휘석룡 스마라그</b> 뒤 시체의 <b>학원의 휘석 열쇠</b>를 각자 챙겨.</li><li>용은 지나쳐도 돼.</li><li><b>마술학원 레아 루카리아</b>에서 <b>라다곤의 붉은 늑대 → 만월의 여왕 레날라</b>를 호스트 교대로.</li><li>레날라 이후 <b>물방울 유생</b>을 써서 재분배 가능.</li></ul></div><div class="route-group common"><h4><span class="tag">공용 강화</span></h4><ul><li>리에니에 북동쪽 <b>레아 루카리아 결정 갱도</b> 보스로 <b>단석 채석꾼의 방울 [1]</b> 획득 → 원탁에서 일반 단석 [1]·[2] 구매 해금.</li></ul></div><div class="route-group" data-role="magic faith"><h4><span class="tag role magic">마검사</span><span class="tag role faith">신앙</span></h4><ul><li><b>메모리 스톤</b>은 붉은 늑대 처치 보상, 원탁 쌍둥이 노파 상점, 흐느낌의 반도 <b>오리티스의 마술사탑</b>에서 각각 하나씩.</li><li>축복의 기억 메뉴에서 마술과 기도를 등록해.</li><li>이지에게 색 잃은 단석 [1]~[4]를 사고, <b>카리아 성관</b>을 돌아 <b>친위기사 로레타</b> 격파 후 라니를 섬기면 이지가 <b>카리아의 휘장</b>을 판매.</li><li>마검사는 레날라의 추억으로 <b>카리아의 왕홀</b>을 교환해 두고 지력 60 이후 사용을 검토.</li></ul></div><div class="route-group" data-role="magic"><h4><span class="tag role magic">마검사</span></h4><ul><li><b>맺음의 교회</b> 미리엘에게 <b>카리아의 대검</b> 구입.</li><li><b>카리아 서원</b>에서 <b>카리아의 휘석 지팡이</b>.</li><li>학원의 늑대 보스방 밖 오른쪽 난간을 넘어 2층 상자의 <b>라다곤의 초상</b>.</li><li>리에니에 동부 작은 황금 나무의 화신에서 <b>마력 두른 깨진 물방울</b>.</li></ul></div><div class="route-group" data-role="blood"><h4><span class="tag role blood">출혈</span></h4><ul><li><b>장미 교회</b> 근처 스카라베의 <b>혈염의 칼날</b>은 표준 타도에 사용 가능.</li><li>필요 신앙 12·신비 10이라 신앙에 투자해 쓸 때만 채택.</li><li>신비 빌드로 바로 갈 경우 피 변질 타도를 계속 써도 충분해.</li><li>리에니에 호수 남동단 절벽 아래의 <b>고인 물 동굴</b> 보스에게 <b>유익검의 휘장</b>.</li></ul></div><div class="route-group" data-role="faith"><h4><span class="tag role faith">신앙</span></h4><ul><li>리에니에 동쪽 <b>화가의 오두막</b> 남쪽 로데일 기사에게 <b>용신앙의 기도서</b> → 미리엘에게 주고 <b>벼락 창</b>.</li><li>미리엘에게 <b>은혜의 축복</b>도 함께 구입.</li></ul></div></div><label class="tick"><input type="checkbox" id="r3">레날라 3회 · 카리아의 대검 · 벼락 창 확보</label>
+</div></details>
+<details class="route" id="stage-04"><summary><span class="route-head"><span aria-hidden="true" class="order">04</span><span class="route-title">알터 고원 · 겔미어 화산<span class="route-level">Lv. 55–85</span></span><span class="route-preview">덱타스 대승강기 → 라이커드 · 쌍날검 · 모독의 성검</span><span aria-hidden="true" class="chevron"></span></span></summary><div class="route-body">
+
+
+
+
+
+<div class="route-content"><div class="route-group common"><h4><span class="tag">각자</span></h4><ul><li>케일리드 동쪽 <b>파로스 요새</b>에서 <b>덱타스의 부절(우)</b>를 챙긴 뒤 리에니에 북쪽 <b>덱타스 대승강기</b>로 알터 진입.</li><li><b>봉인된 갱도</b> 입구 벽을 때려 숨은 길을 열고 <b>단석 채석꾼의 방울 [2]</b>을 회수하면 일반 단석 [3]·[4] 구매 해금.</li></ul></div><div class="route-group common"><h4><span class="tag">합류</span></h4><ul><li><b>모독의 군주 라이커드</b>는 세 세계를 돌아줘도 좋아.</li><li>각자 자기 세계 보스방 입구에서 <b>큰 뱀 사냥꾼</b>을 주워 둔 뒤 합류해.</li><li>신앙은 원탁 엔야에게 추억을 교환해 <b>모독의 성검</b>을 받기.</li><li>화산관 의뢰 보상도 원하면 라이커드 격파 전에 의뢰부터 마무리.</li></ul></div><div class="route-group" data-role="magic"><h4><span class="tag role magic">마검사</span></h4><ul><li><b>마력 전갈</b>부터 확보.</li><li>셀브스의 첫 정약은 기드온에게 처분 가능 → 셀브스 지하 꼭두각시 방 확인 → 그의 꼭두각시와 관련 대화 진행 → 알터의 <b>호박색 별빛</b> 전달.</li><li><b>손가락 죽임의 칼날은 마력 전갈을 받기 전까지 라니에게 건네지 말기.</b></li></ul></div><div class="route-group" data-role="blood"><h4><span class="tag role blood">출혈</span></h4><ul><li>흐린 강 동굴 앞에서 <b>피 묻은 손가락 네리우스</b>를 처치하고 북쪽에서 유라와 대화 → 레아 루카리아 학원 정문 북쪽 다리의 붉은 사인으로 유라를 돕고 다시 대화 → 알터 <b>제2 마리카 교회</b>에서 <b>엘레오노라의 쌍치도</b>와 <b>정혈의 결정 물방울</b>.</li><li>동쪽 <b>풍차 마을</b>의 <b>신의 살갗의 사도</b>를 잡아 <b>신의 살갗 쌍날검</b>.</li><li>지금은 피의 참격으로 피 변질해도 돼.</li><li>알터 서쪽 <b>현자의 동굴</b> 환영 벽 뒤 상자에서 점프 공격을 강화하는 <b>맹금의 검은 깃털</b>도 챙겨.</li></ul></div><div class="route-group" data-role="faith"><h4><span class="tag role faith">신앙</span></h4><ul><li>겔미어 화산 <b>시체 냄새가 나는 오두막</b>에서 기도 <b>황금 나무에 맹세코</b>.</li><li><b>화산관</b>에 가입해 객실의 숨은 벽을 열고 <b>감옥 거리 교회</b> 쪽 던전 → <b>신의 살갗의 귀인</b> → 포털로 라이커드.</li><li>교회 축복 부근 감방 시체에서 <b>황금 나무의 성인</b>도 챙겨 둬.</li></ul></div></div><label class="tick"><input type="checkbox" id="r4">마력 전갈 · 쌍날검 두 자루 · 모독의 성검 확보</label>
+</div></details>
+<details class="route" id="stage-05"><summary><span class="route-head"><span aria-hidden="true" class="order">05</span><span class="route-title">라단 · 도읍 로데일 · 지하<span class="route-level">Lv. 70–100</span></span><span class="route-preview">라단 → 로데일 · 피의 군주의 환희 · 왕의 회복</span><span aria-hidden="true" class="chevron"></span></span></summary><div class="route-body">
+
+
+
+
+<div class="route-content"><div class="route-group common"><h4><span class="tag">합류</span></h4><ul><li>알터 진입 이후 케일리드 <b>적사자성</b>에서 <b>별 부수는 라단</b>.</li><li>DLC 갈 셋은 각자 세계에서 격파하고, <b>철권의 알렉산더</b>와 전투 후 대화해.</li><li>로데일은 거대한 룬 2개를 모은 뒤 <b>용의 트리 가드 → 첫 왕 고드프리의 환영 → 흉조의 왕 모르고트</b> 순서.</li></ul></div><div class="route-group" data-role="blood"><h4><span class="tag role blood">출혈</span></h4><ul><li>라단 이후 열린 <b>영원한 도읍 노크론</b>의 <b>밤의 성역</b>에서 <b>검은 숫돌 칼날</b>을 주워 피·신비 변질 선택지를 열어.</li><li>로데일 우물로 <b>흉조가 버려진 지하</b> 진입 → 대형 가재 구역 → <b>로데일 지하 묘지</b>의 <b>피의 사제 에스거</b>를 잡아 <b>피의 군주의 환희</b>.</li></ul></div><div class="route-group" data-role="faith"><h4><span class="tag role faith">신앙</span></h4><ul><li>로데일이 재의 도읍으로 바뀌기 전에 <b>성관 1층</b> 방의 <b>두 손가락의 기도서</b>를 챙기고 미리엘에게 건네 <b>왕의 회복</b>을 배워.</li><li>신앙 20부터 쓰는 중반 광역 힐.</li></ul></div><div class="route-group" data-role="magic"><h4><span class="tag role magic">마검사</span></h4><ul><li>마력 전갈을 이미 받았으면 라니 퀘스트를 계속해도 돼.</li><li>노크론의 <b>손가락 죽임의 칼날</b> 전달 이후 진행하면 후반에 <b>아듀라의 달의 검</b>도 얻을 수 있어.</li><li>카리아의 대검과 상황별로 병행.</li></ul></div></div><label class="tick"><input type="checkbox" id="r5">모르고트 3회 · 피의 군주의 환희 · 왕의 회복 확보</label>
+</div></details>
+<details class="route" id="stage-06"><summary><span class="route-head"><span aria-hidden="true" class="order">06</span><span class="route-title">모그윈 왕조 · 거인들의 산령 · 성수<span class="route-level">Lv. 90–130</span></span><span class="route-preview">흰 가면 → 모그 · 할복 · 미켈라의 성수</span><span aria-hidden="true" class="chevron"></span></span></summary><div class="route-body">
+
+
+
+<div class="route-content"><div class="route-group common"><h4><span class="tag">각자</span></h4><ul><li>모그윈은 고드릭 이후 <b>장미 교회</b>의 백면 바레 퀘스트로 조기 진입 가능.</li><li>온라인 침입 3회는 승리 불필요.</li><li>오프라인은 알터 <b>피가 꿈틀거리는 폐허</b>의 NPC 침입을 이용.</li><li><b>피의 군주의 서포</b>를 받은 뒤 <b>억제의 교회</b> 무녀의 피를 묻혀 바레에게 돌아가 <b>순혈기사훈장</b>을 받아 사용.</li><li>성수 루트 도중 <b>구별된 설원</b> 서쪽 전송문으로도 갈 수 있어.</li></ul></div><div class="route-group common"><h4><span class="tag">합류</span></h4><ul><li>모그 도전 전에 각자 알터 제2 마리카 교회에서 얻은 <b>정혈의 결정 물방울</b>을 영약에 넣고, 모그의 피 의식 전에 사용.</li><li>성수에 갈 경우 <b>백금 마을</b>의 알버스에게 성수의 비부절 우, 산령 <b>소르 성채</b>의 사령관 니아르 뒤에서 좌 → <b>로르드 대승강기</b>에서 비부절 사용 → <b>전례 거리 오르디나</b> → 미켈라의 성수.</li><li><b>에브레펠</b>의 배수로에서 나뭇가지를 타고 지붕 구멍으로 내려가 <b>용 표식 대형 방패의 탈리스만</b>을 각자 챙겨.</li></ul></div><div class="route-group" data-role="blood"><h4><span class="tag role blood">출혈</span></h4><ul><li><b>모그를 잡기 전에</b> 모그윈 피의 늪에서 <b>이름 없는 백면</b> 암령을 잡아 <b>흰 가면</b> 확보.</li><li>거인들의 산령 <b>빙결 호수</b> 동쪽 투명 스카라베에서 <b>할복</b>.</li><li>이후 성수 배수로 인근에서 밀리센트에게 협력해 <b>부패 익검의 휘장</b> 획득.</li><li>밀리센트는 고리의 오두막 → 에오니아 늪의 오닐에게 침 획득 → 고리에게 수리 → 부패병의 교회 밀리센트 → 알터 황금 나무를 향한 언덕에서 그늘성의 <b>전쟁 처녀의 의수</b> 전달 → 풍차 마을 고지대 → 옛 유적의 설곡 → 에브레펠 기도실 순서로 만나.</li><li>배수로 위 부패 웅덩이의 나무령을 잡고 금색 사인으로 협력해.</li></ul></div></div><label class="tick"><input type="checkbox" id="r6">흰 가면 먼저 확보 · 할복 · 모그 격파 또는 성수 개방</label>
+</div></details>
+<details class="route" id="stage-07"><summary><span class="route-head"><span aria-hidden="true" class="order">07</span><span class="route-title">파름 아즈라 · 재의 도읍 · 엔딩<span class="route-level">Lv. 110–150</span></span><span class="route-preview">불의 거인 → 말리케스 · 알렉산더의 파편 · 황금 나무의 회복</span><span aria-hidden="true" class="chevron"></span></span></summary><div class="route-body">
+
+
+
+<div class="route-content"><div class="route-group common"><h4><span class="tag">합류</span></h4><ul><li><b>불의 거인 → 거인의 불가마 → 무너지는 파름 아즈라 → 신의 살갗의 두 명 → 흑검 말리케스</b>.</li><li>말리케스를 잡으면 로데일이 재의 도읍으로 바뀌므로 이전 도읍 수집물을 먼저 끝내.</li></ul></div><div class="route-group" data-role="magic faith"><h4><span class="tag role magic">마검사</span><span class="tag role faith">신앙</span></h4><ul><li>알렉산더의 퀘스트를 진행했다면 파름 아즈라 <b>용성당 승강기</b> 너머에서 결투로 <b>알렉산더의 파편</b>을 각자 확보.</li><li>중간에 알렉산더를 죽이면 퀘스트 보상을 놓쳐.</li></ul></div><div class="route-group" data-role="faith"><h4><span class="tag role faith">신앙</span></h4><ul><li>재의 도읍 <b>여왕의 규방</b>에서 <b>황금 나무의 회복</b>.</li><li>파름 아즈라에서 <b>무너지는 짐승묘 심부</b>부터 <b>회오리를 향한 노대</b>로 가는 길의 <b>옛 용의 기도서</b>를 미리엘에게 주면 대형 보스용 <b>고룡의 뇌격</b>도 배울 수 있어.</li><li>마술 스탯은 그대로 두고 <b>모독의 성검 + 황금 나무의 성인</b> 조합으로 화력과 파티 회복을 동시에 챙겨.</li></ul></div></div><label class="tick"><input type="checkbox" id="r7">알렉산더의 파편 · 황금 나무의 회복 · 최종전 준비</label>
+</div></details>
+<details class="route" id="stage-08"><summary><span class="route-head"><span aria-hidden="true" class="order">08</span><span class="route-title">황금 나무의 그림자<span class="route-level">선택 · Lv. 120–150+</span></span><span class="route-preview">렐라나 → 메스메르 → 로미나 · 저편에서 온 회복</span><span aria-hidden="true" class="chevron"></span></span></summary><div class="route-body">
+
+
+
+
+
+<div class="route-content"><div class="route-group common"><h4><span class="tag">입장</span></h4><ul><li>각자 <b>별 부수는 라단 + 피의 군주 모그</b>를 잡고 모그 보스방 고치의 팔에 접촉.</li><li>DLC를 먼저 즐길 거면 06에서 바로 넘어와도 돼.</li><li>처음엔 묘지 평원과 십자 주변에서 <b>그림자 나무의 파편</b>을 줍고 각자 축복에서 가호를 올린 뒤 보스 도전.</li></ul></div><div class="route-group common"><h4><span class="tag">합류</span></h4><ul><li>묘지 평원 → <b>엔시스 성채</b>의 렐라나 → <b>그림자 알터</b> → <b>그림자의 성</b>에서 메스메르 격파 및 불씨 확보 → <b>라우프의 옛 유적</b>에서 로미나 격파 → 봉인의 나무에 불을 붙인 뒤 <b>에니르 일림</b>.</li><li>각자 원하는 던전은 필드 파밍과 분리해서 같은 축복이나 보스방 앞에 모여.</li></ul></div><div class="route-group" data-role="magic"><h4><span class="tag role magic">마검사</span></h4><ul><li>월은·대검은 유지.</li><li>마력 저항 보스에 <b>암석탄</b>을 다시 올리고, 새 무기보다 가호와 장비 최대 강화를 우선.</li></ul></div><div class="route-group" data-role="blood"><h4><span class="tag role blood">출혈</span></h4><ul><li>쌍날검 완성 세팅 유지.</li><li>출혈이 안 터지는 상대는 <b>신비 변질 타도</b>로 물리 피해를 내거나, 연타 버프를 유지할 수 있는 쌍날검을 그대로 사용.</li></ul></div><div class="route-group" data-role="faith"><h4><span class="tag role faith">신앙</span></h4><ul><li>그림자 알터 <b>모스의 폐허</b> 북쪽 물가의 동굴에서 <b>저편에서 온 회복</b>.</li><li><b>노인의 오두막</b>에서 <b>폭룡의 탈리스만</b>을 주워 <b>약탈의 화염</b> 강화.</li><li>원거리 힐은 아군 발밑 지형을 보고 쏘면 맞히기 편해.</li><li><b>꽃봉오리의 교회</b> 직전 건물 1층 계단 뒤의 <b>곤충 실 창</b>은 대형 적에게 다단히트를 넣는 물리 기도야.</li></ul></div></div><label class="tick"><input type="checkbox" id="r8">DLC 입장 3인 · 개인별 가호 · 저편에서 온 회복</label>
+</div></details>
+</div>
+<p class="muted small print-hide" id="storage-status">완료 체크는 현재 브라우저에 저장돼.</p>
+</section>
+
+<section class="build magic" id="magic">
+<header class="build-header"><h2>마검사 · 명도 월은 + 카리아의 대검</h2>
+<p class="sub">죄수로 시작. 오른손에는 명도 월은, 왼손에는 지팡이. 근접 광역과 중거리 경직을 한 세팅으로 처리해.</p>
+</header>
+<div class="build-layout"><div class="box stats"><h3>레벨별 스탯</h3><table aria-label="마검사 레벨별 스탯"><thead><tr><th scope="col">능력치</th><th scope="col">Lv. 50</th><th scope="col">Lv. 90</th><th scope="col">Lv. 150</th></tr></thead><tbody><tr><th scope="row">생명력</th><td>30</td><td>40</td><td>55</td></tr><tr><th scope="row">정신력</th><td>16</td><td>20</td><td>25</td></tr><tr><th scope="row">지구력</th><td>13</td><td>17</td><td>20</td></tr><tr><th scope="row">근력</th><td>12</td><td>12</td><td>12</td></tr><tr><th scope="row">기량</th><td>18</td><td>18</td><td>28</td></tr><tr><th scope="row">지력</th><td>31</td><td>53</td><td>80</td></tr><tr><th scope="row">신앙</th><td>6</td><td>6</td><td>6</td></tr><tr><th scope="row">신비</th><td>3</td><td>3</td><td>3</td></tr></tbody></table><p class="stat-note"><b>찍는 순서</b>　지력 18로 운석 지팡이·암석탄 사용 → 생명력 20 전후 → 근력 12·기량 18·지력 23으로 월은 → 지력 24로 카리아의 대검. 그 뒤 생명력 40을 먼저 확보하면서 지력을 올려.</p>
+</div><div class="box gear-panel"><h3>무기·마술 파밍</h3><ul class="gear">
+<li><b class="gear-label">초반</b>죄수 기본 <b>에스톡</b>과 <b>마술의 휘검</b> → <b>카리아의 속검</b> → <b>운석 지팡이 + 암석탄</b>. 암석탄은 물리 피해라 마력에 강한 적에게도 통하고, 큰 적의 자세를 무너뜨리는 데 좋아.</li>
+<li><b class="gear-label">중반</b><b>명도 월은</b>을 먼저 강화. <b>카리아의 휘석 지팡이</b>는 카리아 검 마술을 강화하므로 대검·속검 위주면 일반 단석을 투자. 운석 지팡이의 현재 마술 보정과 비교해서 교체해.</li>
+<li><b class="gear-label">후반</b><b>명도 월은 +10</b>과 <b>카리아의 휘석 지팡이 +25</b>를 기본으로. 여러 계열을 섞고 지력이 60 이상이면 <b>카리아의 왕홀 +10</b>도 선택. 슬롯은 <b>카리아의 대검 / 카리아의 속검 / 암석탄</b> 우선, 여유 있으면 <b>아듀라의 달의 검</b>.</li>
+<li><b class="gear-label">카리아의 대검 전회도 쓰고 싶을 때</b>스톰빌 성의 마술사 로지에르에게 <b>전회 「카리아의 대검」</b>을 사서 보조 에스톡에 달아. 고드릭 이후에는 원탁에서 로지에르를 만나. 명도 월은에는 전용 전투 기술 <b>순간의 달그림자</b>가 고정이므로 왼손 지팡이로 대검 마술을 쓰는 쪽이 전환이 빨라.</li>
+</ul></div>
+<div class="box gear-talisman"><h3>탈리스만 4칸</h3><ul class="gear">
+<li><b class="gear-label">알렉산더의 파편</b>파름 아즈라 알렉산더 결투. <b>순간의 달그림자</b> 강화.</li>
+<li><b class="gear-label">마력 전갈</b>셀브스 보상. 월은의 마력 피해와 검 마술을 같이 올려. 물리 피해가 아프면 빼.</li>
+<li><b class="gear-label">라다곤의 초상</b>레아 루카리아 토론실 위층 상자. 카리아 검 마술의 시전을 빠르게.</li>
+<li><b class="gear-label">카리아의 휘장</b>이지에게 구입. 월은의 전투 기술을 자주 쓰면 유지. 생존 우선이면 <b>용 표식 대형 방패의 탈리스만</b>으로 교체.</li>
+</ul></div>
+<div class="box combat"><h3>실전</h3><ul><li>좁고 큰 적은 <b>순간의 달그림자 강공격</b>으로 세로 참격.</li><li>안전하게 붙었을 때는 칼날과 검기를 함께 맞혀 자세 붕괴를 노려.</li><li>옆으로 퍼진 잡몹은 <b>카리아의 대검</b>이나 달그림자 약공격, 빠른 단일 빈틈은 <b>카리아의 속검</b>.</li><li>영약은 <b>마력 두른 깨진 물방울 + 진주색 굳은 물방울</b>.</li></ul></div>
+</div></section>
+
+<section class="build blood" id="blood">
+<header class="build-header"><h2>출혈 · 쌍날검 연타</h2>
+<p class="sub">사무라이로 시작해 쌍타도로 버티고, 알터에서 쌍날검 두 자루를 맞춰. 큰 빈틈에 다단히트를 몰아넣는 빌드야.</p>
+</header>
+<div class="build-layout"><div class="box stats"><h3>레벨별 스탯</h3><table aria-label="출혈 레벨별 스탯"><thead><tr><th scope="col">능력치</th><th scope="col">Lv. 50</th><th scope="col">Lv. 90</th><th scope="col">Lv. 150</th></tr></thead><tbody><tr><th scope="row">생명력</th><td>30</td><td>40</td><td>60</td></tr><tr><th scope="row">정신력</th><td>11</td><td>13</td><td>15</td></tr><tr><th scope="row">지구력</th><td>16</td><td>20</td><td>25</td></tr><tr><th scope="row">근력</th><td>12</td><td>17</td><td>17</td></tr><tr><th scope="row">기량</th><td>22</td><td>22</td><td>35</td></tr><tr><th scope="row">지력</th><td>9</td><td>9</td><td>9</td></tr><tr><th scope="row">신앙</th><td>8</td><td>8</td><td>8</td></tr><tr><th scope="row">신비</th><td>21</td><td>40</td><td>60</td></tr></tbody></table><p class="stat-note"><b>찍는 순서</b>　생명력 25~30 → 기량 21·신비 19면 엘레오노라 착용 → 근력 17·기량 22로 신의 살갗 쌍날검까지 장착. 신비가 붙는 무기를 챙긴 뒤 신비 45를 먼저 보고, 이후 기량과 생명력을 올려. 최종 신비 60은 신비 변질 타도도 같이 쓰는 예시야.</p>
+</div><div class="box gear-panel"><h3>무기·전회 파밍</h3><ul class="gear">
+<li><b class="gear-label">초반</b>쌍 <b>타도</b>. 오른손은 <b>피의 참격</b>으로 피 변질, 왼손은 기본 상태로 써도 돼. 피 변질 전의 기본 타도는 신비를 올려도 출혈 축적이 오르지 않아. <b>피의 참격</b>은 HP도 사용하니 평타와 섞어.</li>
+<li><b class="gear-label">중반</b>오른손 <b>엘레오노라의 쌍치도</b> → <b>혈인난무</b>, 왼손 <b>신의 살갗 쌍날검</b> → 피 변질. 양손에 쌍날검을 들고 점프 동시 공격으로 연타. 오른손 전투 기술을 쓰면 <b>혈인난무</b>가 나가.</li>
+<li><b class="gear-label">후반</b><b>엘레오노라의 쌍치도 +10 / 피 변질 신의 살갗 쌍날검 +25</b>와 <b>흰 가면 + 맹금의 검은 깃털</b>. 왼손 쌍날검에 <b>할복</b>을 달고 전투 전에 왼손 무기를 양손으로 들어 사용 → 다시 쌍수. 쌍치도에는 할복을 달 수 없어.</li>
+<li><b class="gear-label">출혈 극딜 변형</b>점프 다단히트 비중을 더 높이고 싶으면 보유한 <b>트윈 블레이드</b>를 피 변질하고, <b>상실의 전회</b>로 <b>할복</b>을 복제해서 두 일반 쌍날검에 달아. 왼손을 양손으로 들어 먼저 사용하고, 쌍수로 복귀해 오른손에도 사용. 오른손에 <b>신의 살갗 쌍날검</b>을 들면 양손 달리기 강공격을 병행할 수 있어.</li>
+<li><b class="gear-label">출혈 면역 대비</b>초반 타도 한 자루를 <b>신비 변질 타도</b>로 바꿔 물리 공격용으로 유지. <b>신의 살갗 쌍날검</b>을 한 자루만 쓰는 날은 양손 달리기 강공격도 활용. 할복을 쓰는 보스와 달리 면역전에서는 자체 공격력과 연타에 집중해.</li>
+</ul></div>
+<div class="box gear-talisman"><h3>탈리스만 4칸</h3><ul class="gear">
+<li><b class="gear-label">피의 군주의 환희</b>로데일 지하 묘지 에스거. 주변 출혈 때 흰 가면과 같이 공격력을 올려. 할복으로도 미리 발동.</li>
+<li><b class="gear-label">손톱의 탈리스만</b>스톰빌 성 망루. 쌍날검 점프 동시 공격에 적용.</li>
+<li><b class="gear-label">부패 익검의 휘장</b>밀리센트 협력 보상. 그전엔 고인 물 동굴의 <b>유익검의 휘장</b>.</li>
+<li><b class="gear-label">용 표식 대형 방패의 탈리스만</b>에브레펠. 안전하게 붙어 연타하기 위한 기본 4번째 칸. <b>혈인난무</b> 중심이면 <b>알렉산더의 파편</b>으로 교체. <b>밀리센트의 의수</b>를 추가 확보한 경우 연타 화력용으로도 가능. 한 캐릭터의 1회차에서는 같은 퀘스트로 의수와 부패 휘장을 동시에 받을 수 없어.</li>
+</ul></div>
+<div class="box combat"><h3>실전</h3><ul><li>왼손 <b>할복</b> → 신앙 버프 범위로 붙기 → 보스의 긴 후딜에 쌍수 점프 동시 공격.</li><li>짧은 빈틈엔 평타만, 긴 빈틈엔 <b>혈인난무</b> 후속 입력으로 물러나.</li><li>영약은 <b>가시 깨진 물방울 + 진주색 굳은 물방울</b>.</li><li>가시 물방울은 구별된 설원의 작은 황금 나무에서 얻어.</li></ul></div>
+</div></section>
+
+<section class="build faith" id="faith">
+<header class="build-header"><h2>신앙 · 기도 딜러에서 파티 힐검사로</h2>
+<p class="sub">예언자로 시작. 초중반은 공격 기도가 주력이고, 라이커드 이후 성검과 성인을 양손에 들어. 장비와 스탯은 신앙 중심으로 묶었어.</p>
+</header>
+<div class="build-layout"><div class="box stats"><h3>레벨별 스탯</h3><table aria-label="신앙 레벨별 스탯"><thead><tr><th scope="col">능력치</th><th scope="col">Lv. 50</th><th scope="col">Lv. 90</th><th scope="col">Lv. 150</th></tr></thead><tbody><tr><th scope="row">생명력</th><td>28</td><td>40</td><td>50</td></tr><tr><th scope="row">정신력</th><td>17</td><td>21</td><td>24</td></tr><tr><th scope="row">지구력</th><td>12</td><td>14</td><td>21</td></tr><tr><th scope="row">근력</th><td>12</td><td>22</td><td>22</td></tr><tr><th scope="row">기량</th><td>10</td><td>15</td><td>15</td></tr><tr><th scope="row">지력</th><td>7</td><td>7</td><td>7</td></tr><tr><th scope="row">신앙</th><td>33</td><td>40</td><td>80</td></tr><tr><th scope="row">신비</th><td>10</td><td>10</td><td>10</td></tr></tbody></table><p class="stat-note"><b>찍는 순서</b>　생명력 20~25 → 신앙 17로 벼락 창, 20으로 흑염, 25로 파티 맹세, 27로 신 사냥의 성인. 모독의 성검을 얻으면 근력 22·기량 15를 맞춰 성인과 동시에 들고, 신앙 42에서 최종 광역 힐을 열어. 신앙 40부터 황금 나무의 성인 장착이 가능하고, 높은 신앙에 강화까지 갖추면 주력 성인으로 교체.</p>
+</div><div class="box gear-panel"><h3>무기·기도 파밍</h3><ul class="gear">
+<li><b class="gear-label">초반</b><b>손가락의 성인 + 불 붙이기 / 회복</b>. 스톰빌에서 챙긴 <b>흑염</b>으로 체력 많은 적을 공략하고, 리에니에에선 <b>벼락 창</b>으로 안전한 원거리 딜. <b>은혜의 축복</b>은 이동과 연전에 쓰는 파티 지속 회복.</li>
+<li><b class="gear-label">중반</b><b>신 사냥의 성인 + 모독의 성검</b>. <b>약탈의 화염</b>은 적중 시 시전자가 회복해. 파티원 체력은 <b>회복</b>이나 <b>왕의 회복</b>으로 채워.</li>
+<li><b class="gear-label">후반</b>오른손 <b>모독의 성검 +10</b>, 왼손 <b>황금 나무의 성인 +10</b>. 기본 슬롯은 <b>황금 나무에 맹세코 / 벼락 창 / 흑염 / 왕의 회복</b>. 후반엔 <b>황금 나무의 회복</b>으로 광역 힐을 강화하고, DLC에선 <b>저편에서 온 회복</b>을 실전 기본 힐로 추천.</li>
+<li><b class="gear-label">교체 슬롯</b><em>내 화염 공격이 중요할 때</em> <b>불이여, 힘을!</b>. <em>파티가 탐험 중 자주 긁힐 때</em> <b>은혜의 축복</b>. 불이여, 힘을!은 자기 버프이고, 황금 나무에 맹세코는 범위 안 파티 전체에 걸려.</li>
+</ul></div>
+<div class="box gear-talisman"><h3>탈리스만 4칸</h3><ul class="gear">
+<li><b class="gear-label">알렉산더의 파편</b>파름 아즈라. 약탈의 화염 강화.</li>
+<li><b class="gear-label">화염 전갈</b>겔미어 화산 <b>라이드 요새</b> 옥상 시체. 화염 피해 증가. 생존이 우선이면 <b>카리아의 휘장</b>으로 교체해 전투 기술 FP 절약.</li>
+<li><b class="gear-label">라다곤의 초상</b>레아 루카리아 토론실 위층. 공격·회복 기도 시전 보조. DLC에서는 딜 위주로 할 때 <b>폭룡의 탈리스만</b>으로 바꿔 약탈의 화염을 더 강화.</li>
+<li><b class="gear-label">용 표식 대형 방패의 탈리스만</b>에브레펠. 선딜 있는 광역 회복을 쓰는 동안 생존에 도움.</li>
+</ul></div>
+<div class="box combat"><h3>실전</h3><ul><li>안개 문 앞에서 세 명이 모여 <b>황금 나무에 맹세코</b>.</li><li>전투 중엔 <b>약탈의 화염</b>으로 딜과 자힐, 불에 강한 상대는 <b>벼락 창</b>을 던져.</li><li>광역 힐은 아군이 보스의 다음 공격을 피한 뒤 모였을 때 사용.</li><li>영약은 <b>불꽃 두른 깨진 물방울 + 진주색 굳은 물방울</b>.</li><li>게스트일 땐 파란 성배병을 평소보다 넉넉히 배분해.</li></ul></div>
+</div></section>
+
+<section id="boss">
+<h2>보스전에서 셋이 맞출 것</h2>
+<div class="boss-cards"><article><h3>일반 보스</h3><dl><dt class="magic">마검사</dt><dd>월은 강공격으로 자세 압박</dd><dt class="blood">출혈</dt><dd>큰 후딜에 점프 동시 공격</dd><dt class="faith">신앙</dt><dd>맹세 후 딜·힐 전환</dd></dl></article><article><h3>레날라 2페이즈</h3><dl><dt class="magic">마검사</dt><dd>암석탄·월은 일반 공격</dd><dt class="blood">출혈</dt><dd>근접 연타로 캐스팅 압박</dd><dt class="faith">신앙</dt><dd>흑염이나 벼락 창</dd></dl></article><article><h3>라이커드</h3><p>큰 뱀 사냥꾼 사용 · 셋이 동시에 기술에 묶이지 않게 번갈아 공격</p></article><article><h3>모그</h3><p>흰 가면 수집부터 완료 · 각자 정혈의 결정 물방울 · 피 의식 뒤 재집결</p></article><article><h3>라다곤 / 엘데의 짐승</h3><dl><dt class="magic">마검사</dt><dd>자세 압박 · 마력이 잘 안 먹히면 암석탄</dd><dt class="blood">출혈</dt><dd>둘 다 출혈 면역 · 신비 변질 타도 등 물리 공격</dd><dt class="faith">신앙</dt><dd>라다곤은 약탈의 화염 · 엘데의 짐승은 곤충 실 창(DLC) 또는 공격 후 회복 지원</dd></dl></article></div>
+<div class="support"><div class="box"><h3>강화 재료 동선</h3><ul><li><b>일반 단석</b>은 출혈 쌍날검·타도와 중반 지팡이·성인에, <b>색 잃은 단석</b>은 월은·엘레오노라·모독의 성검 같은 고유 무기에 사용.</li><li>색 잃은 단석 [1]~[4]는 리에니에의 이지, [1]~[2] 무한 구매는 케일리드 <b>사리아의 결정 갱도</b> 보스의 방울로 열려.</li><li>상점과 방울 구매 해금은 각자 진행해야 해.</li></ul><ul><li><b>일반 단석 [5]~[8]</b>은 산령 <b>자미엘의 폐허</b> 지하 상자와 파름 아즈라 <b>신의 살갗의 두 명</b> 보상으로 구매 해금.</li><li><b>색 잃은 단석 [5]~[9]</b>은 산령 <b>제1 마리카 교회</b> 입구 시체, 파름 아즈라 <b>회오리를 향한 노대</b> 축복 근처 시체, <b>대도량 옆</b> 축복 아래 신전 제단 앞 시체에서 방울을 주워 원탁에 건네면 돼.</li></ul><ul><li>중반 목표는 고유 무기 +5~+6 / 일반 무기 +12~+15.</li><li>후반 목표는 고유 무기 +9~+10 / 일반 무기 +24~+25.</li><li>최대 강화 재료는 제한되어 있으니 최종 주력 무기와 촉매에 먼저 써.</li></ul><ul><li><b>영약 공통</b> <b>진주색 굳은 물방울</b>은 그레이오르의 용총 작은 황금 나무의 부패한 화신, <b>불꽃 두른 깨진 물방울</b>은 케일리드 서쪽 작은 황금 나무의 부패한 화신에게서 얻어.</li></ul></div>
+<div class="box"><h3>룬이 부족할 때</h3><ul><li>초반엔 <b>전쟁 배움의 낡은 집</b> 남쪽 언덕의 트롤을 한 마리씩 잡고 축복에서 반복.</li><li>모그윈을 열었으면 <b>왕조에 이르는 절벽길</b> 축복 옆 백금인 무리를 정리하거나, 건너편 큰 새를 활로 맞혀 절벽 아래로 유인해.</li><li>무기 강화와 장착 조건부터 맞춘 뒤 부족한 생명력을 올리는 데 룬을 써.</li></ul></div>
+</div></section>
+
+<section id="sources" class="source">
+<h2>출처</h2>
+<ul>
+<li><a href="https://en.bandainamcoent.eu/elden-ring/news/elden-ring-patch-notes-version-1172">반다이남코 · 공식 패치 1.17.2</a></li>
+<li><a href="https://en.bandainamcoent.eu/elden-ring/news/elden-ring-introduction-the-multiplayer-system">반다이남코 · 공식 멀티플레이 안내</a></li>
+<li><a href="https://m.inven.co.kr/webzine/wznews.php?idx=271123">인벤 · 마술 강화 장비</a></li>
+<li><a href="https://m.inven.co.kr/webzine/wznews.php?idx=296781">인벤 · 모독의 성검과 DLC 장비</a></li>
+<li><a href="https://namu.moe/w/%EC%97%98%EB%93%A0%20%EB%A7%81/%EC%A3%BC%EB%AC%B8/%EB%A7%88%EC%88%A0">한국어 마술 명칭·조건</a></li>
+<li><a href="https://namu.moe/w/%EC%97%98%EB%93%A0%20%EB%A7%81/%EC%A3%BC%EB%AC%B8/%EA%B8%B0%EB%8F%84">한국어 기도 명칭·획득처</a></li>
+<li><a href="https://namu.moe/w/%EC%97%98%EB%93%A0%20%EB%A7%81/%EB%AC%B4%EA%B8%B0/%EC%A4%91%ED%98%95%20%EB%AC%B4%EA%B8%B0">한국어 중형 무기 명칭·조건</a></li>
+<li><a href="https://namu.moe/w/%EC%97%98%EB%93%A0%20%EB%A7%81/%EB%AC%B4%EA%B8%B0/%EC%86%8C%ED%98%95%20%EB%AC%B4%EA%B8%B0/%EC%8C%8D%EB%82%A0%EA%B2%80">한국어 쌍날검 명칭·조건</a></li>
+<li><a href="https://namu.moe/w/%EC%97%98%EB%93%A0%20%EB%A7%81/%ED%83%88%EB%A6%AC%EC%8A%A4%EB%A7%8C">한국어 탈리스만 명칭·획득처</a></li>
+<li><a href="https://namu.moe/w/%EC%97%98%EB%93%A0%20%EB%A7%81/%EC%95%84%EC%9D%B4%ED%85%9C/%EC%98%81%EC%95%BD">한국어 영약 명칭·획득처</a></li>
+<li><a href="https://www.youtube.com/watch?v=PDtslI15V68">이클리피아 · 단석 방울 위치</a></li>
+<li><a href="https://eldenring.bn-ent.net/kr/information/?p=572">반다이남코 · 그림자 나무의 가호</a></li>
+<li><a href="https://www.inven.co.kr/board/eldenring/5871/157">인벤 · 흰 가면 획득 조건</a></li>
+</ul>
+</section>
+</main>
+<script>
+const items = Array.from(document.querySelectorAll('.tick input'));
+const progress = document.querySelector('#progress');
+const storageStatus = document.querySelector('#storage-status');
+const storageKey = 'elden-ring-3player-route-v1';
+function updateProgress() {
+  for (const item of items) {
+    item.closest('label').classList.toggle('done', item.checked);
+    item.closest('.route').classList.toggle('complete', item.checked);
+  }
+  const count = items.filter(item => item.checked).length;
+  progress.textContent = count + ' / ' + items.length + ' 완료';
+}
+try {
+  const saved = JSON.parse(localStorage.getItem(storageKey) || '{}') || {};
+  for (const item of items) item.checked = saved[item.id] === true;
+} catch {
+  storageStatus.textContent = '이 화면에서 체크할 수 있어. 브라우저 저장은 사용할 수 없어.';
+}
+for (const item of items) item.addEventListener('change', () => {
+  updateProgress();
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(Object.fromEntries(items.map(item => [item.id, item.checked]))));
+  } catch {
+    storageStatus.textContent = '이 화면에서 체크할 수 있어. 브라우저 저장은 사용할 수 없어.';
+  }
+});
+updateProgress();
+const filters = [...document.querySelectorAll('[data-filter]')];
+const roleRows = [...document.querySelectorAll('[data-role]')];
+for (const button of filters) button.addEventListener('click', () => {
+  const role = button.dataset.filter;
+  for (const filter of filters) filter.setAttribute('aria-pressed', String(filter === button));
+  for (const row of roleRows) row.hidden = role !== 'all' && !row.dataset.role.split(' ').includes(role);
+});
+
+const routes = [...document.querySelectorAll('.route')];
+for (const button of document.querySelectorAll('[data-routes]')) {
+  button.addEventListener('click', () => {
+    for (const route of routes) route.open = button.dataset.routes === 'open';
+  });
+}
+for (const link of document.querySelectorAll('.priority a')) {
+  link.addEventListener('click', () => { document.getElementById(link.hash.slice(1)).open = true; });
+}
+let printState = [];
+window.addEventListener('beforeprint', () => {
+  printState = routes.map(route => route.open);
+  for (const route of routes) route.open = true;
+});
+window.addEventListener('afterprint', () => {
+  routes.forEach((route, index) => { route.open = printState[index]; });
+});
+</script>
+</body>
+</html>
